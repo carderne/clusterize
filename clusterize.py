@@ -21,21 +21,16 @@ from rasterio.transform import xy
 import shapely.wkt
 from shapely.geometry import MultiPoint
 
-import time
 
 def read_raster(rast_in):
     """Read file and return numpy array, affine and crs."""
-
-    st = time.time()
 
     rast_rd = rasterio.open(rast_in)
     arr = rast_rd.read(1)
     affine = rast_rd.transform
     crs = rast_rd.crs
-    nodata= rast_rd.nodata
+    nodata = rast_rd.nodata
     arr[arr == nodata] = 0
-
-    print("TIME READ:", time.time() - st, "s")
 
     return arr, affine, crs
 
@@ -43,14 +38,10 @@ def read_raster(rast_in):
 def extract_points(arr, min_val=1):
     """Extract points with value==true_val into a list of coordinates."""
 
-    st = time.time()
-
     rr = np.where(arr >= min_val)
     X = [(x, y) for x, y in zip(rr[0], rr[1])]
     print("Num points:", len(X))
     print("Points sample:", X[:4])
-
-    print("TIME POINTS:", time.time() - st, "s")
 
     return X
 
@@ -91,8 +82,6 @@ def neighbors(
         List of sets of nearest neighbor groups.
     """
 
-    st = time.time()
-
     nbrs = NearestNeighbors(algorithm=algorithm).fit(X)
 
     if method == "radius":
@@ -110,15 +99,11 @@ def neighbors(
             groups.append(keepers)
     print("Num groups:", len(groups))
 
-    print("TIME NN:", time.time() - st, "s")
-
     return groups
 
 
 def make_clusters(groups):
     """Transform groups into clusters containing all shared points."""
-
-    st = time.time()
 
     # Combine all values that share nearest neighbors into clusters
     clu = []
@@ -134,9 +119,8 @@ def make_clusters(groups):
 
     clu = merge(groups)
 
-    print("TIME CLUST:", time.time() - st, "s")
-    print('Num clusters:', len(clu))
-    print('Median size:', median(len(c) for c in clu))
+    print("Num clusters:", len(clu))
+    print("Median size:", median(len(c) for c in clu))
 
     # There will be adjacent clusters that aren't merged,
     # but the geometry merge later will fix that and seems more robust.
@@ -175,7 +159,6 @@ def raster_out(file_out, clu, X, arr, affine, crs):
 def merge_overlap(gdf):
     """Merge overlapping geometries."""
 
-
     gdf["same"] = 1
     gdf = gdf.dissolve(by="same")
     gdf = gdf.explode()
@@ -209,8 +192,6 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
         The geometry-fied clusters.
     """
 
-    st = time.time()
-
     # This is the Africa Albers Equal Area Conic EPSG: 102022
     EPSG102022 = """+proj=aea
                     +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25
@@ -238,7 +219,6 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
     gdf["geometry"] = gdf.geometry.convex_hull
     gdf = merge_overlap(gdf)
 
-    print("TIME GPKG:", time.time() - st, "s")
     print("Number of clusters:", len(gdf))
 
     return gdf
