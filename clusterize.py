@@ -132,25 +132,14 @@ def make_clusters(groups):
         if not found:
             clu.append(gr)
 
+    clu = merge(groups)
 
     print("TIME CLUST:", time.time() - st, "s")
     print('Num clusters:', len(clu))
     print('Median size:', median(len(c) for c in clu))
 
-    st = time.time()
-
-    # Run through again and merge any clusters that now share elements
-    # This is because algorithm above will add elements to first found
-    # cluster and may miss later ones that also share.
-    # for i1, c1 in enumerate(clu):
-        # for i2, c2 in enumerate(clu):
-            # if len(c1 & c2) > 0:
-                # clu[i1] |= c2
-                # del clu[i2]
-
-    print("TIME FIX:", time.time() - st, "s")
-    print("Num clusters:", len(clu))
-    print("Median size:", median(len(c) for c in clu))
+    # There will be adjacent clusters that aren't merged,
+    # but the geometry merge later will fix that and seems more robust.
 
     return clu
 
@@ -181,6 +170,19 @@ def raster_out(file_out, clu, X, arr, affine, crs):
     )
     filtered_out.write(rast_out, 1)
     filtered_out.close()
+
+
+def merge_overlap(gdf):
+    """Merge overlapping geometries."""
+
+
+    gdf["same"] = 1
+    gdf = gdf.dissolve(by="same")
+    gdf = gdf.explode()
+    gdf = gdf.reset_index()
+    gdf = gdf.drop(columns=["same", "level_1"])
+
+    return gdf
 
 
 def make_geometry(clu, X, affine, crs, buffer_amount=100):
@@ -232,11 +234,9 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
     gdf["geometry"] = gdf.geometry.buffer(buffer_amount)
     gdf = gdf.to_crs(crs)
 
-    gdf["same"] = 1
-    gdf = gdf.dissolve(by="same")
-    gdf = gdf.explode()
-    gdf = gdf.reset_index()
-    gdf = gdf.drop(columns=["same", "level_1"])
+    gdf = merge_overlap(gdf)
+    gdf["geometry"] = gdf.geometry.convex_hull
+    gdf = merge_overlap(gdf)
 
     print("TIME GPKG:", time.time() - st, "s")
     print("Number of clusters:", len(gdf))
