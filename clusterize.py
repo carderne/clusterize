@@ -117,13 +117,11 @@ def make_clusters(groups):
         if not found:
             clu.append(gr)
 
-    clu = merge(groups)
+    # There will be adjacent clusters that aren't merged,
+    # but the geometry merge later will fix that and seems more robust.
 
     print("Num clusters:", len(clu))
     print("Median size:", median(len(c) for c in clu))
-
-    # There will be adjacent clusters that aren't merged,
-    # but the geometry merge later will fix that and seems more robust.
 
     return clu
 
