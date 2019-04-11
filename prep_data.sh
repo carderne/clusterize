@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Downsample and filter a provided population raster.
-# Arg 1: Input aster name
+# Arg 1: Input raster name
 # Arg 2: New resolution in degrees
 # Arg 3: Minimum value after resampling
 # Arg 4: Output file name
