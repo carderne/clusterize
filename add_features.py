@@ -83,7 +83,7 @@ def clip_raster(raster, boundary, boundary_layer=None):
     return clipped, affine, crs
 
 
-def add_raster_layer(clusters, raster, operation, col_name, affine=None, crs=None):
+def add_raster_layer(clusters, raster, operation, col_name, affine=None, crs=None, decimals=2):
     """
     The filter_merge_clusters() process loses the underlying raster values.
     So we need to use rasterstats.zonal_stats() to get it back.
@@ -122,6 +122,7 @@ def add_raster_layer(clusters, raster, operation, col_name, affine=None, crs=Non
         clusters_proj[col_name] = [x[operation] for x in stats]
 
         clusters = clusters_proj.to_crs(clusters.crs)
+        clusters[col_name] = clusters[col_name].round(decimals)
 
         return clusters
 
@@ -129,7 +130,7 @@ def add_raster_layer(clusters, raster, operation, col_name, affine=None, crs=Non
         raise NotImplementedError("Only implemented for path input.")
 
 
-def add_vector_layer(clusters, vector, operation, col_name, shape, affine, raster_crs):
+def add_vector_layer(clusters, vector, operation, col_name, shape, affine, raster_crs, decimals=2):
     """
     Use a vector containing grid infrastructure to determine
     each cluster's distance from the grid.
@@ -181,8 +182,10 @@ def add_vector_layer(clusters, vector, operation, col_name, shape, affine, raste
             vectors=clusters, raster=dist_raster, affine=affine, stats="min"
         )
         clusters[col_name] = [x["min"] for x in dists]
+        clusters[col_name] = clusters[col_name].round(decimals)
+        clusters = clusters.to_crs(epsg=4326)
 
-        return clusters.to_crs(epsg=4326)
+        return clusters
 
     else:
         raise NotImplementedError('Currently only "distance" is supported.')
