@@ -1,9 +1,5 @@
 # Custom
-*.tif
-*.gpkg
-*.gpkg-shm
-*.gpkg-wal
-*.ipynb
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

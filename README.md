@@ -2,19 +2,38 @@
 
 Tool for converting raster population data into polygon settlement clusters, primarily for use with [openelec](https://github.com/carderne/openelec).
 
-Steps to use:
-1. Use `prep_data.sh` with a population raster to downsample and filter low population pixels.
-Example usage to downsample to 0.001 degrees and rsubsequently remove pixels with an average value below 1:
+## Usage
+Use `./run.py` with one of the three sub-commads:
+1. `prep` prepares a raster for clusterizing
+2. `make` convert a raster into polygon clusters
+3. `feat` adds features from other data sources
+
+Example:
     ```
-    ./prep_data.sh pop_in.tif 0.001 1 pop_prepped.tif
+    # Downsample to 0.001 degrees and remove average values below 1
+    ./run.py prep pop_in.tif pop_out.tif -s 0.001 -f 1
+
+    # Create clusters using radiusneighbors method, radius 3
+    # and buffering by 100 metres before merging
+    ./run.py make -m radius -r 3 -b 100 pop_prepped.tif clusters.gpkg
+
+    # Add features as using a config file
+    # Example in features.yml
+    ./run.py feat -c features.yml clusters.gpkg clusters_out.gpkg
+
     ```
 
-2. Use `clusterize.py` to create polygon clusters from this file.
-Example usage to use the radiusneighbors method with a radius of 3, subsequently buffering by 100 metres and merging:
-    ```
-    ./clusterize.py -m radius -r 3 -b 100 pop_prepped.tif clusters.gpkg
-    ```
+## Requirements
+- `pyyaml`
+- `numpy`
+- `pandas`
+- `scipy`
+- `scikit-learn`
+- `rasterio`
+- `rasterstats`
+- `shapely`
+- `geopandas`
 
-3. Use `add_features.py` to add population, grid distance and whatever other raster and vector features to the clusters.
-(Simple example still to come.)
+## Installation
+Clone from GitHub, install requirements into a virtual environment, and use the `./run.py` script as described above.
 

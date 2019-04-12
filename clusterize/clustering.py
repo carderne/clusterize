@@ -221,30 +221,3 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
 
     return gdf
 
-
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument("raster_in", help="Input raster file to be processed")
-    parser.add_argument("gpkg_out", help="Filename for output GPKG")
-    parser.add_argument("--min_val", type=int, default=1, help="Minimum raster value to be considered a population site")
-    parser.add_argument("-m", "--method", default="radius", help="Options are 'radius' or 'k' for the two different sklean methods")
-    parser.add_argument("-r", "--radius", type=int, default=3, help="Radius in cells for radius method")
-    parser.add_argument("--n_neighbors", type=int, default=10, help="Number of neighbors for kneighbors method")
-    parser.add_argument("--min_neighbors", type=int, default=5, help="Discard grouping below this cutoff")
-    parser.add_argument("--max_dist", type=int, default=5, help="Discard neighbors above this cutoff")
-    parser.add_argument("-b", "--buffer", type=int, default=100, help="Amount in metres by which to buffer clusters before merging")
-    args = parser.parse_args()
-
-    arr, affine, crs = read_raster(args.raster_in)
-    X = extract_points(arr)
-    groups = neighbors(
-        X,
-        method=args.method,
-        radius=args.radius,
-        n_neighbors=args.n_neighbors,
-        min_neighbors=args.min_neighbors,
-        max_dist=args.max_dist,
-    )
-    clu = make_clusters(groups)
-    gdf = make_geometry(clu, X, affine, crs, buffer_amount=args.buffer)
-    gdf.to_file(args.gpkg_out, driver="GPKG")

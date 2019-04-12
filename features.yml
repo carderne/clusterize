@@ -1,0 +1,41 @@
+- name: pop
+  type: raster
+  file: hrsl.tif
+  operation: sum
+  decimals: 0
+  fix:
+    minimum: 0
+- name: ntl
+  type: raster
+  file: ntl.tif
+  operation: max
+  decimals: 2
+  fix:
+    minimum: 0
+- name: travel
+  type: raster
+  file: travel.tif
+  operation: median
+  decimals: 0
+  fix:
+    factor: 1/60
+    no_value: median
+- name: gdp
+  type: raster
+  file: gdp.tif
+  operation: sum
+  decimals: 0
+  fix:
+    factor: 1000
+    maximum: largest
+    no_value: median
+    per_capita: True
+- name: grid
+  type: vector
+  operation: distance
+  fix:
+    factor: 1/1000
+
+
+
+

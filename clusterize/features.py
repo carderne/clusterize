@@ -40,7 +40,6 @@ def clip_raster(raster, boundary, boundary_layer=None):
     boundary_layer: string, optional
         For multi-layer files (like GeoPackage), specify the layer to be used.
 
-
     Returns
     -------
     tuple
@@ -53,7 +52,6 @@ def clip_raster(raster, boundary, boundary_layer=None):
             crs: dict
                 Dict of the form {'init': 'epsg:4326'} defining the coordinate
                 reference system of the raster.
-
     """
 
     if isinstance(raster, Path):
@@ -109,6 +107,7 @@ def add_raster_layer(clusters, raster, operation, col_name, affine=None, crs=Non
     clusters: geopandas.GeoDataFrame
         The processed clusters with new column.
     """
+
     if isinstance(raster, Path):
         raster = str(raster)
     if isinstance(raster, str):
@@ -154,7 +153,6 @@ def add_vector_layer(clusters, vector, operation, col_name, shape, affine, raste
     -------
     clusters: geopandas.GeoDataFrame
         The processed clusters with new column.
-
     """
 
     if isinstance(vector, Path):
