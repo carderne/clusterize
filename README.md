@@ -9,6 +9,7 @@ Use `./run.py` with one of the three sub-commads:
 3. `feat` adds features from other data sources
 
 Example:
+
     ```
     # Downsample to 0.001 degrees and remove average values below 1
     ./run.py prep pop_in.tif pop_out.tif -s 0.001 -f 1
