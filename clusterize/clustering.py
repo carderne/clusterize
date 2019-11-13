@@ -5,7 +5,7 @@ Convert raster/gridded population data into discrete
 polygon population clusters.
 
 Must be run with Python 3.6+ with the following packages available:
-    numpy, pandas, geopandas, matplotlib, sklearn, rasterio, shapely
+    numpy, pandas, geopandas, sklearn, rasterio, shapely
 """
 
 from statistics import median
@@ -14,7 +14,6 @@ from argparse import ArgumentParser
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-import matplotlib.pyplot as plt
 from sklearn.neighbors import NearestNeighbors
 import rasterio
 from rasterio.transform import xy
@@ -135,7 +134,6 @@ def raster_out(file_out, clu, X, arr, affine, crs):
     for c in clu:
         for loc in c:
             rast_out[X[loc]] = cluster_num
-        cluster_num += 1
 
     # Export values
     filtered_out = rasterio.open(
@@ -195,6 +193,7 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
                     +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25
                     +x_0=0 +y_0=0
                     +ellps=WGS84 +datum=WGS84 +units=m +no_defs"""
+    EPSG3857 = {"init": "epsg:3857"}
 
     clusters = []
     for c in clu:
@@ -209,7 +208,8 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
     gdf = gpd.GeoDataFrame(gdf, crs=crs, geometry=geometry)
 
     gdf["geometry"] = gdf.geometry.convex_hull
-    gdf = gdf.to_crs(EPSG102022)
+    # gdf = gdf.to_crs(EPSG3857)
+    buffer_amount /= 1e5
     gdf["geometry"] = gdf.geometry.buffer(buffer_amount)
     gdf = gdf.to_crs(crs)
 
@@ -220,4 +220,3 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
     print("Number of clusters:", len(gdf))
 
     return gdf
-
