@@ -27,12 +27,30 @@ from clusterize.features import add_raster_layer, add_vector_layer, fix_column
 script_dir = Path(os.path.dirname(__file__))
 cfg_default = script_dir / "features.yml"
 
-EPSG102022 = "+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-
 
 @click.group(help="Utility for creating population clusters.")
 def cli():
     pass
+
+
+@cli.command()
+@click.argument("raster_in")
+@click.argument("raster_out")
+@click.option(
+    "--res", default=0.1, type=click.FLOAT, help="New resolution in CRS units"
+)
+@click.option(
+    "--min_val", default=5, type=click.INT, help="Minimum value (after resampling)"
+)
+def prep(raster_in, raster_out, res, min_val):
+    """Resample and threshold a population raster."""
+
+    command = (
+        f"gdal_translate -ot Byte -a_nodata none {raster_in} /vsistdout/ | "
+        f"gdalwarp -tr {res} {res} -r average /vsistdin/ /vsistdout/ | "
+        f"gdal_calc.py -A /vsistdin/ --outfile={raster_out} --calc='A>{min_val}' --NoDataValue=0"
+    )
+    os.system(command)
 
 
 @cli.command()

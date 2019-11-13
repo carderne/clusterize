@@ -12,19 +12,18 @@ Example:
 
 ```
 # Downsample to 0.001 degrees and remove average values below 1
-./run.py prep pop_in.tif pop_out.tif -s 0.001 -f 1
+./run.py prep pop_in.tif pop_out.tif --res 0.001 --min_val 1
 
 # Create clusters using radiusneighbors method, radius 3
 # and buffering by 100 metres before merging
-./run.py make -m radius -r 3 -b 100 pop_prepped.tif clusters.gpkg
+./run.py make --method radius --radius 3 --buffer 100 pop_prepped.tif clusters.gpkg
 
 # Add features as using a config file
 # Example in features.yml
-./run.py feat -c features.yml clusters.gpkg clusters_out.gpkg
+./run.py feat --config features.yml clusters.gpkg clusters_out.gpkg
 ```
 
 ## Requirements
-- `pyyaml`
 - `numpy`
 - `pandas`
 - `scipy`
@@ -33,6 +32,8 @@ Example:
 - `rasterstats`
 - `shapely`
 - `geopandas`
+- `PyYAML`
+- `Click`
 
 ## Installation
 Clone from GitHub, install requirements into a virtual environment, and use the `./run.py` script as described above.
