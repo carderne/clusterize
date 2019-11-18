@@ -2,6 +2,11 @@
 
 Tool for converting raster population data into polygon settlement clusters, primarily for use with [openelec](https://github.com/carderne/openelec).
 
+From this             |  To this
+:-------------------------:|:-------------------------:
+![raster data](raster.png)  |  ![processed clusters](clusters.png)
+
+
 ## Usage
 Use `./run.py` with one of the three sub-commads:
 1. `prep` prepares a raster for clusterizing
