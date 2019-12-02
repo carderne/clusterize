@@ -188,13 +188,6 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
         The geometry-fied clusters.
     """
 
-    # This is the Africa Albers Equal Area Conic EPSG: 102022
-    EPSG102022 = """+proj=aea
-                    +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25
-                    +x_0=0 +y_0=0
-                    +ellps=WGS84 +datum=WGS84 +units=m +no_defs"""
-    EPSG3857 = {"init": "epsg:3857"}
-
     clusters = []
     for c in clu:
         coords = [X[loc] for loc in c]
@@ -208,10 +201,8 @@ def make_geometry(clu, X, affine, crs, buffer_amount=100):
     gdf = gpd.GeoDataFrame(gdf, crs=crs, geometry=geometry)
 
     gdf["geometry"] = gdf.geometry.convex_hull
-    # gdf = gdf.to_crs(EPSG3857)
-    buffer_amount /= 1e5
+    buffer_amount /= 1e5  # divide by 100K for rough conversion to degrees
     gdf["geometry"] = gdf.geometry.buffer(buffer_amount)
-    gdf = gdf.to_crs(crs)
 
     gdf = merge_overlap(gdf)
     gdf["geometry"] = gdf.geometry.convex_hull
