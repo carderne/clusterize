@@ -17,13 +17,12 @@ Functions:
 import json
 from pathlib import Path
 
-import numpy as np
 from scipy import ndimage
 import geopandas as gpd
 
 import rasterio
 from rasterio.mask import mask
-from rasterio.features import shapes, rasterize
+from rasterio.features import rasterize
 from rasterstats import zonal_stats
 
 
@@ -117,12 +116,15 @@ def add_raster_layer(
         # Throws memory error if don't ensure they are same
         if not crs:
             crs = rasterio.open(raster).crs
+            if not isinstance(crs, dict):
+                crs = crs.to_dict()
         clusters_proj = clusters.to_crs(crs)
         stats = zonal_stats(clusters_proj, raster, stats=operation)
 
         clusters_proj[col_name] = [x[operation] for x in stats]
 
         clusters = clusters_proj.to_crs(clusters.crs)
+        clusters[col_name] = clusters[col_name].fillna(0)
         clusters[col_name] = clusters[col_name].round(decimals)
 
         return clusters
@@ -131,9 +133,7 @@ def add_raster_layer(
         raise NotImplementedError("Only implemented for path input.")
 
 
-def add_vector_layer(
-    clusters, vector, operation, col_name, shape, affine, raster_crs, decimals=2
-):
+def add_vector_layer(clusters, vector, operation, col_name, raster_like, decimals=2):
     """
     Use a vector containing grid infrastructure to determine
     each cluster's distance from the grid.
@@ -147,11 +147,8 @@ def add_vector_layer(
     operation: str
         Operation to perform in extracting vector data.
         Currently only 'distance' supported.
-    shape: tuple
-        Tuple of two integers representing the shape of the data
-        for rasterizing grid. Sould match the clipped raster.
-    affine: affine.Affine()
-        As above, should match the clipped raster.
+    raster_like: file-like
+        Raster file to use for crs, shape, affine when rasterizing vector
 
     Returns
     -------
@@ -164,8 +161,15 @@ def add_vector_layer(
     if isinstance(vector, str):
         vector = gpd.read_file(vector)
 
-    vector = vector.to_crs(crs=raster_crs)
-    clusters = clusters.to_crs(crs=raster_crs)
+    with rasterio.open(raster_like) as rd:
+        crs = rd.crs
+        if not isinstance(crs, dict):
+            crs = crs.to_dict()
+        affine = rd.transform
+        shape = rd.shape
+
+    vector = vector.to_crs(crs=crs)
+    clusters = clusters.to_crs(crs=crs)
 
     if operation == "distance":
         vector = vector.loc[vector["geometry"].length > 0]
@@ -184,6 +188,7 @@ def add_vector_layer(
             vectors=clusters, raster=dist_raster, affine=affine, stats="min"
         )
         clusters[col_name] = [x["min"] for x in dists]
+        clusters[col_name] = clusters[col_name].fillna(0)
         clusters[col_name] = clusters[col_name].round(decimals)
         clusters = clusters.to_crs(epsg=4326)
 

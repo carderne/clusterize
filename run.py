@@ -27,6 +27,12 @@ from clusterize.features import add_raster_layer, add_vector_layer, fix_column
 script_dir = Path(os.path.dirname(__file__))
 cfg_default = script_dir / "features.yml"
 
+# This is the Africa Albers Equal Area Conic EPSG: 102022
+EPSG102022 = """+proj=aea
+                +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25
+                +x_0=0 +y_0=0
+                +ellps=WGS84 +datum=WGS84 +units=m +no_defs"""
+
 
 @click.group(help="Utility for creating population clusters.")
 def cli():
@@ -143,7 +149,7 @@ def feat(clusters_in, clusters_out, config):
                 raster=Path(f["file"]).expanduser(),
                 operation=f["operation"],
                 col_name=f["name"],
-                crs=f["crs"],
+                crs=f["crs"] if "crs" in f.keys() else None,
                 decimals=f["decimals"],
             )
 
@@ -153,9 +159,7 @@ def feat(clusters_in, clusters_out, config):
                 vector=Path(f["file"]).expanduser(),
                 operation=f["operation"],
                 col_name=f["name"],
-                shape="shape",
-                affine="affine",
-                raster_crs="raster_crs",
+                raster_like=f["raster_like"],
                 decimals=f["decimals"],
             )
 
@@ -166,11 +170,11 @@ def feat(clusters_in, clusters_out, config):
             clusters = fix_column(
                 clusters=clusters,
                 col_name=f["name"],
-                factor=f["factor"],
-                minimum=f["minimum"],
-                maximum=f["maximum"],
-                no_value=f["no_value"],
-                per_capita=f["per_capita"],
+                factor=f["factor"] if "factor" in f.keys() else None,
+                minimum=f["minimum"] if "minimum" in f.keys() else None,
+                maximum=f["maximum"] if "maximum" in f.keys() else None,
+                no_value=f["no_value"] if "no_value" in f.keys() else None,
+                per_capita=f["per_capita"] if "per_capita" in f.keys() else None,
             )
 
     clusters = clusters.to_crs(EPSG102022)

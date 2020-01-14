@@ -32,10 +32,9 @@
     per_capita: True
 - name: grid
   type: vector
+  raster_like: ntl_proj.tif
   operation: distance
+  file: grid.gpkg
+  decimals: 2
   fix:
     factor: 1/1000
-
-
-
-
