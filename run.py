@@ -54,7 +54,7 @@ def prep(raster_in, raster_out, res, min_val):
     command = (
         f"gdal_translate -ot Byte -a_nodata none {raster_in} /vsistdout/ | "
         f"gdalwarp -tr {res} {res} -r average /vsistdin/ /vsistdout/ | "
-        f"gdal_calc.py -A /vsistdin/ --outfile={raster_out} --calc='A>{min_val}' --NoDataValue=0"
+        f"gdal_calc.py -A /vsistdin/ --outfile={raster_out} --calc='A>{min_val}' --NoDataValue=0 --overwrite"
     )
     os.system(command)
 
